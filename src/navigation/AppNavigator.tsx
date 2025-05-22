@@ -5,7 +5,7 @@ import LoginPage from '../pages/LoginPage';
 import HomePage from '../pages/HomePage';
 import AssignedTasks from '../pages/AssignedTasks';
 import AssignedProjects from '../pages/AssignedProjects';
-
+import AttendanceScreen from '../pages/AttendanceTaking';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator: React.FC = () => {
@@ -31,6 +31,11 @@ const AppNavigator: React.FC = () => {
           name="Projects"
           component={AssignedProjects}
           options={{ title: 'Assigned Projects' }}
+        />
+        <Stack.Screen
+          name="Attendance"
+          component={AttendanceScreen}
+          options={{ title: 'Attendance Taking' }}
         />
       </Stack.Navigator>
     </NavigationContainer>

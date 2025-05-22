@@ -225,7 +225,6 @@ const AssignedProjects: React.FC = () => {
           <View style={styles.card}>
             <Text style={styles.title}>{item.project_name}</Text>
             <Text style={styles.description}>{item.description}</Text>
-            <Text style={styles.budget}>Budget: RWF {item.budget}</Text>
 
             <Text style={styles.sectionTitle}>Current Images:</Text>
             {item.images && item.images.length > 0 ? (

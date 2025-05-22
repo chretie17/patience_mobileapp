@@ -58,7 +58,7 @@ const LoginPage: React.FC<Props> = ({ navigation }) => {
       <View style={styles.contentContainer}>
         <View style={styles.logoContainer}>
           <Image
-            source={require('../../assets/logo.png')}
+            source={require('../../assets/logo.jpg')}
             style={styles.logo}
             resizeMode="contain"
           />
