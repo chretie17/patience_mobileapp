@@ -11,6 +11,7 @@ import {
 import { Picker } from '@react-native-picker/picker';
 import api from '../utils/api';
 import { getUserId } from '../utils/storage';
+import * as Location from 'expo-location'; // Location package
 
 interface Task {
   id: number;
@@ -29,7 +30,6 @@ const AssignedTasks: React.FC = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [status, setStatus] = useState<{ [key: number]: string }>({});
   const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState('');
 
   useEffect(() => {
     fetchTasks();
@@ -37,8 +37,6 @@ const AssignedTasks: React.FC = () => {
 
   const fetchTasks = async () => {
     const userId = await getUserId();
-    console.log(`Fetching tasks for user ID: ${userId}`);
-
     if (!userId) {
       Alert.alert('Session Expired', 'Please log in again.');
       return;
@@ -46,17 +44,13 @@ const AssignedTasks: React.FC = () => {
 
     try {
       const response = await api.get(`/tasks/assigned/${userId}`);
-      console.log('Tasks fetched successfully:', response.data);
       setTasks(response.data);
-
-      // Set initial status
       const initialStatus = response.data.reduce((acc: any, task: Task) => {
         acc[task.id] = task.status;
         return acc;
       }, {});
       setStatus(initialStatus);
     } catch (error) {
-      console.error('Error fetching tasks:', error);
       Alert.alert('Error', 'Failed to fetch assigned tasks.');
     } finally {
       setLoading(false);
@@ -64,21 +58,35 @@ const AssignedTasks: React.FC = () => {
   };
 
   const handleStatusUpdate = async (taskId: number) => {
-    console.log(`Updating status for task ID ${taskId} to: ${status[taskId]}`);
+    let location = null;
+    try {
+      const { status: locStatus } = await Location.requestForegroundPermissionsAsync();
+      if (locStatus !== 'granted') {
+        Alert.alert('Permission denied', 'Location permission is required to update status.');
+        return;
+      }
+
+      const coords = await Location.getCurrentPositionAsync({});
+      location = `https://maps.google.com/?q=${coords.coords.latitude},${coords.coords.longitude}`;
+    } catch (locError) {
+      console.error('Location error:', locError);
+      Alert.alert('Error', 'Unable to get your location.');
+      return;
+    }
 
     try {
-      const response = await api.put(`/tasks/${taskId}/status`, { status: status[taskId] });
+      const response = await api.put(`/tasks/${taskId}/status`, {
+        status: status[taskId],
+        location: location,
+      });
 
       if (response.data.message === 'Task status updated successfully') {
-        console.log(`Task ${taskId} status updated successfully!`);
         Alert.alert('Success', `Task ${taskId} status updated.`);
         fetchTasks();
       } else {
-        console.error(`Failed to update status for task ID ${taskId}`);
         Alert.alert('Error', 'Failed to update task status.');
       }
     } catch (err) {
-      console.error(`Error updating task status for task ID ${taskId}:`, err);
       Alert.alert('Error', 'An error occurred while updating the task status.');
     }
   };
@@ -118,7 +126,6 @@ const AssignedTasks: React.FC = () => {
 
           <Text style={styles.status}>Status: {status[item.id]}</Text>
 
-          {/* Status Picker */}
           <Picker
             selectedValue={status[item.id]}
             onValueChange={(value) =>
@@ -134,7 +141,6 @@ const AssignedTasks: React.FC = () => {
             ))}
           </Picker>
 
-          {/* Update Button */}
           <TouchableOpacity style={styles.button} onPress={() => handleStatusUpdate(item.id)}>
             <Text style={styles.buttonText}>Update Status</Text>
           </TouchableOpacity>
