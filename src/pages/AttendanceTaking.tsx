@@ -68,10 +68,89 @@ const AttendanceScreen: React.FC = () => {
       const response = await api.get(`/attendance/user/${userId}`);
       setRecords(response.data);
 
-      const today = new Date().toISOString().split('T')[0];
-      const todayRecord = response.data.find((r: any) => r.date === today);
-      if (todayRecord && todayRecord.check_in) {
-        setCheckedIn(true);
+      // Debug: Log all records to see the date format
+      console.log('All Records:', response.data);
+      console.log('All record dates:', response.data.map((r: any) => r.date));
+
+      // Check today's attendance status with multiple date formats
+      const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+      const todayAlternate = new Date().toLocaleDateString('en-CA'); // Also YYYY-MM-DD but local
+      const todayUS = new Date().toLocaleDateString('en-US'); // MM/DD/YYYY
+      
+      console.log('Today (ISO):', today);
+      console.log('Today (Local CA):', todayAlternate);
+      console.log('Today (US):', todayUS);
+      
+      // Try to find today's record with different date formats
+      let todayRecord = response.data.find((r: any) => r.date === today);
+      
+      if (!todayRecord) {
+        todayRecord = response.data.find((r: any) => r.date === todayAlternate);
+        console.log('Trying alternate date format...');
+      }
+      
+      if (!todayRecord) {
+        // Try matching with just the date part if the stored date includes time
+        todayRecord = response.data.find((r: any) => {
+          if (r.date && typeof r.date === 'string') {
+            const recordDate = r.date.split('T')[0]; // Extract date part if it includes time
+            return recordDate === today;
+          }
+          return false;
+        });
+        console.log('Trying date part extraction...');
+      }
+      
+      if (!todayRecord) {
+        // Try parsing dates to compare
+        const todayDate = new Date(today);
+        todayRecord = response.data.find((r: any) => {
+          if (r.date) {
+            const recordDate = new Date(r.date);
+            return recordDate.toDateString() === todayDate.toDateString();
+          }
+          return false;
+        });
+        console.log('Trying date object comparison...');
+      }
+      
+      console.log('Today Record:', todayRecord);
+      
+      if (todayRecord) {
+        console.log('Check In:', todayRecord.check_in);
+        console.log('Check Out:', todayRecord.check_out);
+        console.log('Check Out type:', typeof todayRecord.check_out);
+        console.log('Check Out is null:', todayRecord.check_out === null);
+        console.log('Check Out is undefined:', todayRecord.check_out === undefined);
+        console.log('Check Out is empty string:', todayRecord.check_out === '');
+        
+        // User has checked in today but hasn't checked out yet
+        // Check for various falsy values that might represent "no checkout"
+        const hasCheckedIn = todayRecord.check_in && 
+                           todayRecord.check_in !== null && 
+                           todayRecord.check_in !== '' && 
+                           todayRecord.check_in !== 'null';
+        
+        const hasCheckedOut = todayRecord.check_out && 
+                            todayRecord.check_out !== null && 
+                            todayRecord.check_out !== '' && 
+                            todayRecord.check_out !== 'null' &&
+                            todayRecord.check_out !== undefined;
+        
+        console.log('Has Checked In:', hasCheckedIn);
+        console.log('Has Checked Out:', hasCheckedOut);
+        
+        if (hasCheckedIn && !hasCheckedOut) {
+          console.log('Setting checkedIn to TRUE - user can check out');
+          setCheckedIn(true);
+        } else {
+          console.log('Setting checkedIn to FALSE - user needs to check in');
+          setCheckedIn(false);
+        }
+      } else {
+        // No record for today, user hasn't checked in yet
+        console.log('No record for today - setting checkedIn to FALSE');
+        setCheckedIn(false);
       }
     } catch (error) {
       console.error('Failed to fetch attendance records:', error);
@@ -156,7 +235,14 @@ const AttendanceScreen: React.FC = () => {
 
       if (response.status === 200) {
         Alert.alert('Success', response.data.message);
-        setCheckedIn(type === 'check-in');
+        
+        // Update the checkedIn state based on the action
+        if (type === 'check-in') {
+          setCheckedIn(true);
+        } else if (type === 'check-out') {
+          setCheckedIn(false);
+        }
+        
         fetchAttendanceRecords();
       } else {
         Alert.alert('Error', response.data.message || 'Attendance action failed.');
@@ -198,6 +284,7 @@ const AttendanceScreen: React.FC = () => {
         <Text style={styles.locationText}>{locationText || 'Fetching location...'}</Text>
       </View>
 
+      
       {/* Action Buttons */}
       <View style={styles.actionSection}>
         {loading ? (
@@ -341,6 +428,25 @@ const AttendanceScreen: React.FC = () => {
 };
 
 const styles = StyleSheet.create({
+  debugSection: {
+    backgroundColor: '#FEF3C7',
+    margin: 20,
+    padding: 15,
+    borderRadius: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#F59E0B',
+  },
+  debugTitle: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#92400E',
+    marginBottom: 8,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#92400E',
+    marginBottom: 4,
+  },
   container: {
     flex: 1,
     backgroundColor: '#F8FAFC',
