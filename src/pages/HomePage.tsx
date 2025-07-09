@@ -44,9 +44,16 @@ const HomePage: React.FC<Props> = ({ navigation }) => {
       iconBg: '#ECFDF5',
       iconColor: '#10B981',
     },
+   {
+  icon: 'time-outline' as const,
+  title: 'Inventory Usage Report',
+  subtitle: 'Check in and track time',
+  screen: 'Inventory Usage',
+  colors: ['#FBBF24', '#F59E0B'],    // amber-400 → amber-500
+  iconBg: '#FFFBEB',                // amber-50
+  iconColor: '#FBBF24',             // amber-400
+},
   ];
-
-
 
   const renderDashboardButton = (item: typeof dashboardItems[0], index: number) => (
     <TouchableOpacity

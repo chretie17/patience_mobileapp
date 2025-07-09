@@ -6,6 +6,7 @@ import HomePage from '../pages/HomePage';
 import AssignedTasks from '../pages/AssignedTasks';
 import AssignedProjects from '../pages/AssignedProjects';
 import AttendanceScreen from '../pages/AttendanceTaking';
+import InventoryUsageReport from '../pages/InventoryPage';
 const Stack = createNativeStackNavigator();
 
 const AppNavigator: React.FC = () => {
@@ -36,6 +37,11 @@ const AppNavigator: React.FC = () => {
           name="Attendance"
           component={AttendanceScreen}
           options={{ title: 'Attendance Taking' }}
+        />
+        <Stack.Screen
+          name="Inventory Usage"
+          component={InventoryUsageReport}
+          options={{ title: 'Inventory Usage Report' }}
         />
       </Stack.Navigator>
     </NavigationContainer>
