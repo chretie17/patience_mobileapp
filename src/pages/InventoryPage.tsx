@@ -12,7 +12,7 @@ import {
   Modal,
   Dimensions,
   Platform,
-} from 'react-native';
+} from 'react-native'
 import { Picker } from '@react-native-picker/picker';
 import api from '../utils/api';
 import { getUserId } from '../utils/storage';
@@ -51,9 +51,11 @@ const InventoryUsageReport: React.FC = () => {
   const [searchText, setSearchText] = useState('');
   const [selectedTask, setSelectedTask] = useState<number | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [showTaskModal, setShowTaskModal] = useState(false);
   const [showItemModal, setShowItemModal] = useState(false);
   const [selectedItem, setSelectedItem] = useState<InventoryItem | null>(null);
   const [quantityInput, setQuantityInput] = useState('');
+  
 
   useEffect(() => {
     fetchInitialData();
@@ -299,27 +301,50 @@ const InventoryUsageReport: React.FC = () => {
           <Text style={styles.headerTitle}>📦 Inventory Usage Report</Text>
           <Text style={styles.headerSubtitle}>Select items and report usage</Text>
         </View>
+{        /* Task Selection */}
 
-        {/* Task Selection */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Select Task</Text>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={selectedTask}
-              onValueChange={(value) => setSelectedTask(value)}
-              style={styles.picker}
-            >
-              <Picker.Item label="Select a task..." value={null} />
-              {tasks.map((task) => (
-                <Picker.Item
-                  key={task.id}
-                  label={task.title}
-                  value={task.id}
-                />
-              ))}
-            </Picker>
+  <Text style={styles.sectionTitle}>Select Task</Text>
+  <View style={styles.taskSelectorContainer}>
+    {!selectedTask ? (
+      <FlatList
+        data={tasks}
+        keyExtractor={(item) => item.id.toString()}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            style={styles.taskCard}
+            onPress={() => setSelectedTask(item.id)}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.taskCardText}>{item.title}</Text>
+            <Text style={styles.taskCardArrow}>→</Text>
+          </TouchableOpacity>
+        )}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          <Text style={styles.taskListHeader}>Choose a task to continue:</Text>
+        }
+      />
+    ) : (
+      <View style={styles.selectedTaskContainer}>
+        <View style={styles.selectedTaskCard}>
+          <View style={styles.selectedTaskContent}>
+            <Text style={styles.selectedTaskLabel}>Selected Task:</Text>
+            <Text style={styles.selectedTaskTitle}>
+              {tasks.find(task => task.id === selectedTask)?.title}
+            </Text>
           </View>
+          <TouchableOpacity
+            style={styles.changeTaskButton}
+            onPress={() => setSelectedTask(null)}
+          >
+            <Text style={styles.changeTaskButtonText}>Change</Text>
+          </TouchableOpacity>
         </View>
+      </View>
+    )}
+  </View>
+</View>
 
         {/* Search and Filter */}
         <View style={styles.section}>
@@ -463,6 +488,7 @@ const InventoryUsageReport: React.FC = () => {
     </View>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
@@ -813,6 +839,81 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+  taskSelectorContainer: {
+  backgroundColor: '#FFFFFF',
+  borderRadius: 12,
+  borderWidth: 1,
+  borderColor: '#E8F0FF',
+  overflow: 'hidden',
+},
+taskListHeader: {
+  fontSize: 14,
+  color: '#666',
+  fontWeight: '500',
+  padding: 16,
+  paddingBottom: 8,
+  backgroundColor: '#F8FAFF',
+},
+taskCard: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  paddingVertical: 16,
+  paddingHorizontal: 16,
+  borderBottomWidth: 1,
+  borderBottomColor: '#E8F0FF',
+  backgroundColor: '#FFFFFF',
+},
+taskCardText: {
+  fontSize: 16,
+  color: '#333',
+  flex: 1,
+},
+taskCardArrow: {
+  fontSize: 16,
+  color: '#2766EC',
+  fontWeight: 'bold',
+},
+selectedTaskContainer: {
+  padding: 16,
+  backgroundColor: '#F8FAFF',
+},
+selectedTaskCard: {
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  backgroundColor: '#FFFFFF',
+  borderRadius: 8,
+  padding: 16,
+  borderLeftWidth: 4,
+  borderLeftColor: '#34C759',
+},
+selectedTaskContent: {
+  flex: 1,
+},
+selectedTaskLabel: {
+  fontSize: 12,
+  color: '#666',
+  fontWeight: '500',
+  marginBottom: 4,
+},
+selectedTaskTitle: {
+  fontSize: 16,
+  color: '#333',
+  fontWeight: 'bold',
+},
+changeTaskButton: {
+  backgroundColor: '#2766EC',
+  paddingHorizontal: 12,
+  paddingVertical: 6,
+  borderRadius: 6,
+},
+changeTaskButtonText: {
+  color: '#FFFFFF',
+  fontSize: 14,
+  fontWeight: '600',
+},
+
 });
 
 export default InventoryUsageReport;
