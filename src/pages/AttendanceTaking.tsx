@@ -309,17 +309,16 @@ const AttendanceScreen: React.FC = () => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={[
-                styles.actionButton,
-                styles.checkOutButton,
-              ]}
-              onPress={() => handleAttendance('check-out')}
-              disabled={!checkedIn}
-            >
-              <Text style={styles.buttonIcon}>🔴</Text>
-              <Text style={styles.buttonText}>Check Out</Text>
-              <Text style={styles.buttonSubtext}>End your day</Text>
-            </TouchableOpacity>
+  style={[
+    styles.actionButton,
+    styles.checkOutButton
+  ]}
+  onPress={() => handleAttendance('check-out')}
+>
+  <Text style={styles.buttonIcon}>🔴</Text>
+  <Text style={styles.buttonText}>Check Out</Text>
+  <Text style={styles.buttonSubtext}>End your day</Text>
+</TouchableOpacity>
           </View>
         )}
       </View>
