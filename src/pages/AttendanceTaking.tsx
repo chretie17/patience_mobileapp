@@ -312,7 +312,6 @@ const AttendanceScreen: React.FC = () => {
               style={[
                 styles.actionButton,
                 styles.checkOutButton,
-                !checkedIn && styles.disabledButton
               ]}
               onPress={() => handleAttendance('check-out')}
               disabled={!checkedIn}
